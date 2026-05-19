@@ -80,6 +80,7 @@ x86/
 # MATLAB
 *.slx
 *.sldd
+Test.m
 Ref
 
 # Office
