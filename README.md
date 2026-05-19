@@ -53,16 +53,18 @@ NewModelApp
 
 Excel 需包含两个工作表 `Inputs`（或 `Input`/`输入`）和 `Outputs`（或 `Output`/`输出`），列定义如下：
 
-| A 序号 | B 端口名称 | C 数据类型 | D StorageClass | E Identifier |
-|:------:|:----------:|:---------:|:--------------:|:------------:|
-| 1 | speed | double | ExportedGlobal | speed_Global |
-| 2 | angle | double | Auto | |
-| 3 | enable | boolean | ImportedExtern | ext_enable |
+| A 序号 | B 端口名称 | C 数据类型 | D StorageClass | E Identifier | F HeaderFile | G DefinitionFile |
+|:------:|:----------:|:---------:|:--------------:|:------------:|:-----------:|:---------------:|
+| 1 | speed | double | ExportedGlobal | speed_Global | | |
+| 2 | angle | double | Auto | | myModel_types.h | myModel.c |
+| 3 | enable | boolean | ImportedExtern | ext_enable | ext_types.h | |
 
 - **B 列（端口名称）** — 必填，作为块路径名
 - **C 列（数据类型）** — 可选，设为块 `OutDataTypeStr`；为空则继承默认
 - **D 列（StorageClass）** — 可选，需勾选 Code Mapping 才生效；为空设为 `Auto`
 - **E 列（Identifier）** — 可选，需勾选 Code Mapping 才生效；为空不设置
+- **F 列（HeaderFile）** — 可选，需勾选 Code Mapping 才生效；指定生成的变量声明在哪个头文件中
+- **G 列（DefinitionFile）** — 可选，需勾选 Code Mapping 才生效；指定生成的变量定义在哪个源文件中
 
 ### 端口模板生成
 

@@ -471,18 +471,22 @@ classdef NewModelApp < handle
                     nOut = length(outputPorts);
                     importCount = sprintf('（导入 %d 个输入端口，%d 个输出端口）', nIn, nOut);
 
-                    % ===== 6a. 检查端口是否有 StorageClass / Identifier =====
+                    % ===== 6a. 检查端口是否有 Code Mapping 相关列 =====
                     cmApplied = app.ExcelCodeMapCheckBox.Value;
                     if cmApplied
                         hasSC = false;
                         for tmpIdx = 1:length(inputPorts)
-                            if ~isempty(inputPorts{tmpIdx}.storageClass) || ~isempty(inputPorts{tmpIdx}.identifier)
+                            p = inputPorts{tmpIdx};
+                            if ~isempty(p.storageClass) || ~isempty(p.identifier) || ...
+                                    ~isempty(p.headerFile) || ~isempty(p.definitionFile)
                                 hasSC = true; break;
                             end
                         end
                         if ~hasSC
                             for tmpIdx = 1:length(outputPorts)
-                                if ~isempty(outputPorts{tmpIdx}.storageClass) || ~isempty(outputPorts{tmpIdx}.identifier)
+                                p = outputPorts{tmpIdx};
+                                if ~isempty(p.storageClass) || ~isempty(p.identifier) || ...
+                                        ~isempty(p.headerFile) || ~isempty(p.definitionFile)
                                     hasSC = true; break;
                                 end
                             end
@@ -514,6 +518,12 @@ classdef NewModelApp < handle
                             if ~isempty(p.identifier)
                                 nvPairs = [nvPairs, {'Identifier', p.identifier}];
                             end
+                            if ~isempty(p.headerFile)
+                                nvPairs = [nvPairs, {'HeaderFile', p.headerFile}];
+                            end
+                            if ~isempty(p.definitionFile)
+                                nvPairs = [nvPairs, {'DefinitionFile', p.definitionFile}];
+                            end
                             setInport(cmObj, p.name, nvPairs{:});
                         end
                         % 输出端口
@@ -527,6 +537,12 @@ classdef NewModelApp < handle
                             end
                             if ~isempty(p.identifier)
                                 nvPairs = [nvPairs, {'Identifier', p.identifier}];
+                            end
+                            if ~isempty(p.headerFile)
+                                nvPairs = [nvPairs, {'HeaderFile', p.headerFile}];
+                            end
+                            if ~isempty(p.definitionFile)
+                                nvPairs = [nvPairs, {'DefinitionFile', p.definitionFile}];
                             end
                             setOutport(cmObj, p.name, nvPairs{:});
                         end
@@ -577,8 +593,12 @@ classdef NewModelApp < handle
             %   列C: 数据类型（可选）
             %   列D: StorageClass（可选，用于 Code Mapping）
             %   列E: Identifier（可选，用于 Code Mapping）
+            %   列F: HeaderFile（可选，用于 Code Mapping）
+            %   列G: DefinitionFile（可选，用于 Code Mapping）
             %
-            % 返回: inputPorts, outputPorts — 端口 struct 数组（含 name / dataType / storageClass / identifier）
+            % 返回: inputPorts, outputPorts — 端口 struct 数组（含 name / dataType / storageClass / identifier / headerFile / definitionFile）
+
+
 
             inputPorts = {};
             outputPorts = {};
@@ -722,6 +742,8 @@ classdef NewModelApp < handle
             %   列C: 数据类型（可选）
             %   列D: StorageClass（可选，用于 Code Mapping）
             %   列E: Identifier（可选，用于 Code Mapping）
+            %   列F: HeaderFile（可选，用于 Code Mapping）
+            %   列G: DefinitionFile（可选，用于 Code Mapping）
             ports = {};
 
             if isempty(raw)
@@ -777,11 +799,29 @@ classdef NewModelApp < handle
                     end
                 end
 
+                % 列F: HeaderFile
+                portHeaderFile = '';
+                if length(row) >= 6 && ~app.isBlank(row{6})
+                    if ischar(row{6})
+                        portHeaderFile = strtrim(row{6});
+                    end
+                end
+
+                % 列G: DefinitionFile
+                portDefinitionFile = '';
+                if length(row) >= 7 && ~app.isBlank(row{7})
+                    if ischar(row{7})
+                        portDefinitionFile = strtrim(row{7});
+                    end
+                end
+
                 ports{end+1} = struct( ...
-                    'name',         portName, ...
-                    'dataType',     portDataType, ...
-                    'storageClass', portStorageClass, ...
-                    'identifier',   portIdentifier); %#ok<AGROW>
+                    'name',           portName, ...
+                    'dataType',       portDataType, ...
+                    'storageClass',   portStorageClass, ...
+                    'identifier',     portIdentifier, ...
+                    'headerFile',     portHeaderFile, ...
+                    'definitionFile', portDefinitionFile); %#ok<AGROW>
             end
         end
     end
