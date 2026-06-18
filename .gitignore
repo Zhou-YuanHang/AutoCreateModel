@@ -85,3 +85,8 @@ Ref
 
 # Office
 *.xlsx
+*.diff
+.reasonix
+.codegraph
+.workbuddy
+reasonix.toml
