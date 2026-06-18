@@ -20,6 +20,7 @@
         % 模型名称
         NameLabel          matlab.ui.control.Label
         NameEditField      matlab.ui.control.EditField
+        ModelBrowseButton  matlab.ui.control.Button
 
         % 离散模型
         DiscreteCheckBox   matlab.ui.control.CheckBox
@@ -123,9 +124,17 @@
             app.NameLabel.FontSize = 12;
 
             app.NameEditField = uieditfield(app.UIFigure, 'text');
-            app.NameEditField.Position = [110, 448, 410, 24];
+            app.NameEditField.Position = [110, 448, 310, 24];
             app.NameEditField.Value = 'myModel';
             app.NameEditField.Tooltip = '输入有效的 MATLAB 标识符（字母开头，无空格）';
+
+            % ---- 模型文件浏览按钮（修改端口模式专用） ----
+            app.ModelBrowseButton = uibutton(app.UIFigure, 'push');
+            app.ModelBrowseButton.Position = [430, 444, 90, 24];
+            app.ModelBrowseButton.Text = '浏览...';
+            app.ModelBrowseButton.FontSize = 11;
+            app.ModelBrowseButton.Visible = 'off';
+            app.ModelBrowseButton.ButtonPushedFcn = @(~, ~) app.onBrowseModel();
 
             % ---- 离散模型 ----
             app.DiscreteCheckBox = uicheckbox(app.UIFigure);
@@ -353,6 +362,15 @@
                 end
             end
 
+            % 模型浏览按钮（仅在修改端口模式显示）
+            if isvalid(app.ModelBrowseButton)
+                if isCreate
+                    app.ModelBrowseButton.Visible = 'off';
+                else
+                    app.ModelBrowseButton.Visible = 'on';
+                end
+            end
+
             % 切换时重置状态
             app.StatusLabel.FontColor = [0.4, 0.4, 0.4];
             app.StatusLabel.Text = sprintf('当前模式: %s', app.ModeDropDown.Value);
@@ -365,6 +383,22 @@
             else
                 app.updatePorts();
             end
+        end
+
+        function onBrowseModel(app)
+            % 弹出文件选择窗口，选择 .slx 模型文件
+            [file, path] = uigetfile({'*.slx', 'Simulink 模型 (*.slx)'; ...
+                                       '*.mdl', 'Simulink 模型 (*.mdl)'}, ...
+                                       '选择模型文件');
+            figure(app.UIFigure);  % 把窗口拉回最前
+            if isequal(file, 0)
+                return;  % 用户取消
+            end
+
+            [~, name, ~] = fileparts(file);
+            app.NameEditField.Value = name;
+            app.StatusLabel.FontColor = [0.2, 0.5, 0.2];
+            app.StatusLabel.Text = sprintf('已选择模型: %s', fullfile(path, file));
         end
 
         function onExportPorts(app)

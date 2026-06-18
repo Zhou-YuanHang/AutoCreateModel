@@ -90,3 +90,5 @@ Ref
 .codegraph
 .workbuddy
 reasonix.toml
+*.mlappinstall
+*.prj
