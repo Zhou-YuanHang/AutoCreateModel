@@ -673,51 +673,84 @@
                             load_system(modelName);
                         end
                         cmObj = coder.mapping.utils.create(modelName);
-                        % 输入端口
+
+                        inputErrors = {}; outputErrors = {};  % 分别收集 Input/Output 端口级错误
+
+                        % 输入端口（每个端口独立 try-catch，互不干扰）
                         for pIdx = 1:length(inputPorts)
                             p = inputPorts{pIdx};
-                            nvPairs = {};
-                            if ~isempty(p.storageClass)
-                                nvPairs = [nvPairs, {'StorageClass', p.storageClass}];
-                            else
-                                nvPairs = [nvPairs, {'StorageClass', 'Auto'}];
+                            try
+                                nvPairs = {};
+                                if ~isempty(p.storageClass)
+                                    nvPairs = [nvPairs, {'StorageClass', p.storageClass}];
+                                else
+                                    nvPairs = [nvPairs, {'StorageClass', 'Auto'}];
+                                end
+                                if ~isempty(p.identifier)
+                                    nvPairs = [nvPairs, {'Identifier', p.identifier}];
+                                end
+                                if ~isempty(p.headerFile)
+                                    nvPairs = [nvPairs, {'HeaderFile', p.headerFile}];
+                                end
+                                if ~isempty(p.definitionFile)
+                                    nvPairs = [nvPairs, {'DefinitionFile', p.definitionFile}];
+                                end
+                                setInport(cmObj, p.name, nvPairs{:});
+                            catch ME_port
+                                inputErrors{end+1} = p.name; %#ok<AGROW>
                             end
-                            if ~isempty(p.identifier)
-                                nvPairs = [nvPairs, {'Identifier', p.identifier}];
-                            end
-                            if ~isempty(p.headerFile)
-                                nvPairs = [nvPairs, {'HeaderFile', p.headerFile}];
-                            end
-                            if ~isempty(p.definitionFile)
-                                nvPairs = [nvPairs, {'DefinitionFile', p.definitionFile}];
-                            end
-                            setInport(cmObj, p.name, nvPairs{:});
                         end
-                        % 输出端口
+
+                        % 输出端口（每个端口独立 try-catch，互不干扰）
                         for pIdx = 1:length(outputPorts)
                             p = outputPorts{pIdx};
-                            nvPairs = {};
-                            if ~isempty(p.storageClass)
-                                nvPairs = [nvPairs, {'StorageClass', p.storageClass}];
-                            else
-                                nvPairs = [nvPairs, {'StorageClass', 'Auto'}];
+                            try
+                                nvPairs = {};
+                                if ~isempty(p.storageClass)
+                                    nvPairs = [nvPairs, {'StorageClass', p.storageClass}];
+                                else
+                                    nvPairs = [nvPairs, {'StorageClass', 'Auto'}];
+                                end
+                                if ~isempty(p.identifier)
+                                    nvPairs = [nvPairs, {'Identifier', p.identifier}];
+                                end
+                                if ~isempty(p.headerFile)
+                                    nvPairs = [nvPairs, {'HeaderFile', p.headerFile}];
+                                end
+                                if ~isempty(p.definitionFile)
+                                    nvPairs = [nvPairs, {'DefinitionFile', p.definitionFile}];
+                                end
+                                setOutport(cmObj, p.name, nvPairs{:});
+                            catch ME_port
+                                outputErrors{end+1} = p.name; %#ok<AGROW>
                             end
-                            if ~isempty(p.identifier)
-                                nvPairs = [nvPairs, {'Identifier', p.identifier}];
-                            end
-                            if ~isempty(p.headerFile)
-                                nvPairs = [nvPairs, {'HeaderFile', p.headerFile}];
-                            end
-                            if ~isempty(p.definitionFile)
-                                nvPairs = [nvPairs, {'DefinitionFile', p.definitionFile}];
-                            end
-                            setOutport(cmObj, p.name, nvPairs{:});
                         end
+
                         % 再次保存以写入 Code Mapping 配置
                         save_system(modelName);
                         importCount = [importCount, ' + Code Mapping'];
-                    catch ME_cm2
-                        app.showWarning(sprintf('Code Mapping 设置失败: %s\n端口仍已创建。', ME_cm2.message));
+
+                        % 统一报告所有出错的端口
+                        errParts = {};
+                        if ~isempty(inputErrors)
+                            errParts{end+1} = '【Input】'; %#ok<AGROW>
+                            for i = 1:length(inputErrors)
+                                errParts{end+1} = sprintf('  - %s', inputErrors{i}); %#ok<AGROW>
+                            end
+                        end
+                        if ~isempty(outputErrors)
+                            errParts{end+1} = '【Output】'; %#ok<AGROW>
+                            for i = 1:length(outputErrors)
+                                errParts{end+1} = sprintf('  - %s', outputErrors{i}); %#ok<AGROW>
+                            end
+                        end
+                        if ~isempty(errParts)
+                            errMsg = sprintf('Code Mapping 配置失败的端口：\n\n%s', strjoin(errParts, '\n'));
+                            uialert(app.UIFigure, errMsg, 'Code Mapping 部分失败', 'Icon', 'warning');
+                        end
+
+                    catch ME_cmObj
+                        app.showWarning(sprintf('Code Mapping 初始化失败: %s\n端口仍已创建。', ME_cmObj.message));
                     end
                 end
 
@@ -849,51 +882,81 @@
                         end
                         cmObj = coder.mapping.utils.create(modelName);
 
-                        % 输入端口
+                        inputErrors = {}; outputErrors = {};  % 分别收集 Input/Output 端口级错误
+
+                        % 输入端口（每个端口独立 try-catch，互不干扰）
                         for pIdx = 1:length(newInputPorts)
                             p = newInputPorts{pIdx};
-                            nvPairs = {};
-                            if ~isempty(p.storageClass)
-                                nvPairs = [nvPairs, {'StorageClass', p.storageClass}];
-                            else
-                                nvPairs = [nvPairs, {'StorageClass', 'Auto'}];
+                            try
+                                nvPairs = {};
+                                if ~isempty(p.storageClass)
+                                    nvPairs = [nvPairs, {'StorageClass', p.storageClass}];
+                                else
+                                    nvPairs = [nvPairs, {'StorageClass', 'Auto'}];
+                                end
+                                if ~isempty(p.identifier)
+                                    nvPairs = [nvPairs, {'Identifier', p.identifier}];
+                                end
+                                if ~isempty(p.headerFile)
+                                    nvPairs = [nvPairs, {'HeaderFile', p.headerFile}];
+                                end
+                                if ~isempty(p.definitionFile)
+                                    nvPairs = [nvPairs, {'DefinitionFile', p.definitionFile}];
+                                end
+                                setInport(cmObj, p.name, nvPairs{:});
+                            catch ME_port
+                                inputErrors{end+1} = p.name; %#ok<AGROW>
                             end
-                            if ~isempty(p.identifier)
-                                nvPairs = [nvPairs, {'Identifier', p.identifier}];
-                            end
-                            if ~isempty(p.headerFile)
-                                nvPairs = [nvPairs, {'HeaderFile', p.headerFile}];
-                            end
-                            if ~isempty(p.definitionFile)
-                                nvPairs = [nvPairs, {'DefinitionFile', p.definitionFile}];
-                            end
-                            setInport(cmObj, p.name, nvPairs{:});
                         end
-                        % 输出端口
+                        % 输出端口（每个端口独立 try-catch，互不干扰）
                         for pIdx = 1:length(newOutputPorts)
                             p = newOutputPorts{pIdx};
-                            nvPairs = {};
-                            if ~isempty(p.storageClass)
-                                nvPairs = [nvPairs, {'StorageClass', p.storageClass}];
-                            else
-                                nvPairs = [nvPairs, {'StorageClass', 'Auto'}];
+                            try
+                                nvPairs = {};
+                                if ~isempty(p.storageClass)
+                                    nvPairs = [nvPairs, {'StorageClass', p.storageClass}];
+                                else
+                                    nvPairs = [nvPairs, {'StorageClass', 'Auto'}];
+                                end
+                                if ~isempty(p.identifier)
+                                    nvPairs = [nvPairs, {'Identifier', p.identifier}];
+                                end
+                                if ~isempty(p.headerFile)
+                                    nvPairs = [nvPairs, {'HeaderFile', p.headerFile}];
+                                end
+                                if ~isempty(p.definitionFile)
+                                    nvPairs = [nvPairs, {'DefinitionFile', p.definitionFile}];
+                                end
+                                setOutport(cmObj, p.name, nvPairs{:});
+                            catch ME_port
+                                outputErrors{end+1} = p.name; %#ok<AGROW>
                             end
-                            if ~isempty(p.identifier)
-                                nvPairs = [nvPairs, {'Identifier', p.identifier}];
-                            end
-                            if ~isempty(p.headerFile)
-                                nvPairs = [nvPairs, {'HeaderFile', p.headerFile}];
-                            end
-                            if ~isempty(p.definitionFile)
-                                nvPairs = [nvPairs, {'DefinitionFile', p.definitionFile}];
-                            end
-                            setOutport(cmObj, p.name, nvPairs{:});
                         end
+
                         save_system(modelName);
                         importReport = [importReport, ' + Code Mapping'];
+
+                        % 统一报告所有出错的端口
+                        errParts = {};
+                        if ~isempty(inputErrors)
+                            errParts{end+1} = '【Input】'; %#ok<AGROW>
+                            for i = 1:length(inputErrors)
+                                errParts{end+1} = sprintf('  - %s', inputErrors{i}); %#ok<AGROW>
+                            end
+                        end
+                        if ~isempty(outputErrors)
+                            errParts{end+1} = '【Output】'; %#ok<AGROW>
+                            for i = 1:length(outputErrors)
+                                errParts{end+1} = sprintf('  - %s', outputErrors{i}); %#ok<AGROW>
+                            end
+                        end
+                        if ~isempty(errParts)
+                            errMsg = sprintf('Code Mapping 配置失败的端口：\n\n%s', strjoin(errParts, '\n'));
+                            uialert(app.UIFigure, errMsg, 'Code Mapping 部分失败', 'Icon', 'warning');
+                        end
                     end
-                catch ME_cm
-                    app.showWarning(sprintf('Code Mapping 设置失败: %s\n端口已更新。', ME_cm.message));
+                catch ME_cmObj
+                    app.showWarning(sprintf('Code Mapping 初始化失败: %s\n端口已更新。', ME_cmObj.message));
                 end
             end
 
